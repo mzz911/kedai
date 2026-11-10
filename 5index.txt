@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barcode Barang - Loyverse</title>
+<style>
+body{font-family:Arial,sans-serif;padding:15px;background:#f5f5f5;max-width:480px;margin:auto}
+h2{text-align:center;margin:5px 0}
+p{text-align:center;color:#666;font-size:13px;margin-top:0}
+label{font-weight:bold;display:block;margin-top:12px}
+input,select{width:100%;padding:12px;font-size:18px;margin-top:5px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;background:white}
+.box{background:white;padding:15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-top:15px}
+button{width:100%;padding:14px;font-size:18px;background:#007bff;color:white;border:none;border-radius:8px;margin-top:12px;font-weight:bold;cursor:pointer}
+button.green{background:#28a745}
+button.orange{background:#ff9800}
+button.small{width:auto;padding:7px 12px;font-size:13px;margin:0}
+button.red{background:#dc3545}
+button.grey{background:#6c757d}
+button.purple{background:#6a1b9a}
+button.teal{background:#009688}
+.result{background:white;padding:15px;border-radius:12px;margin-top:15px;text-align:center;display:none;border:2px dashed #007bff}
+.price{font-size:30px;font-weight:bold;color:#d32f2f;margin:5px 0}
+.barcode-num{font-size:18px;letter-spacing:2px;margin:10px 0;font-family:monospace}
+.item-list{margin-top:10px}
+.item-row{display:flex;justify-content:space-between;align-items:center;background:#f8f9fa;padding:10px;border-radius:8px;margin-top:8px;border:1px solid #eee;cursor:pointer}
+.item-row:active{background:#e8f0fe;border-color:#007bff}
+.item-row b{font-size:15px}
+.item-row span{font-size:13px;color:#666}
+.item-btns{display:flex;gap:6px;flex-shrink:0;margin-left:8px}
+.item-row.selected{background:#e8f0fe;border:2px solid #007bff}
+hr{border:none;border-top:1px dashed #ccc;margin:15px 0}
+.upload-box{background:#f0f7ff;border:2px dashed #007bff;padding:12px;border-radius:10px;margin-top:12px;text-align:center}
+.export-box{background:#f3e5f5;border:2px dashed #6a1b9a;padding:12px;border-radius:10px;margin-top:12px;text-align:center}
+.check-row{display:flex;align-items:center;gap:8px;background:#fff3cd;padding:8px;border-radius:8px;margin-top:8px;text-align:left;font-size:13px;font-weight:bold}
+.check-row input{width:auto;margin:0}
+.search-wrap{position:relative}
+.search-wrap input{padding-left:38px;background:#fffbe6;font-size:17px;font-weight:bold}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none;z-index:2}
+.clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:#ddd !important;color:#333 !important;width:28px !important;height:28px !important;padding:0 !important;margin:0 !important;font-size:14px !important;border-radius:50% !important;display:none;z-index:2}
+.search-info{font-size:12px;color:#666;margin-top:5px}
+.list-search-wrap{position:relative;margin-top:10px}
+.list-search-wrap input{padding-left:38px;background:#fffbe6;font-size:16px;font-weight:bold}
+.list-search-info{font-size:12px;color:#666;margin-top:5px}
+.warn{font-size:12px;color:#d32f2f;font-weight:bold;margin-top:5px;display:none}
+.ok{font-size:12px;color:#28a745;font-weight:bold;margin-top:5px;display:none}
+.cat-badge{display:inline-block;background:#e8f0fe;color:#1a56db;font-size:11px;font-weight:bold;padding:2px 7px;border-radius:20px;margin-left:5px;vertical-align:middle}
+.filter-row{display:flex;gap:8px;margin-top:10px}
+.filter-row select{flex:1}
+.pilih-list{max-height:320px;overflow-y:auto;margin-top:10px;border:1px solid #eee;border-radius:10px;padding:0 8px 8px;background:white}
+.pilih-list .item-row{margin-top:8px}
+.pilih-empty{padding:20px;text-align:center;color:#999;font-size:13px}
+.pilih-head{position:sticky;top:0;background:white;padding:8px 2px;font-size:11px;color:#888;font-weight:bold;border-bottom:1px solid #eee;z-index:1}
+.sort-info{font-size:11px;color:#888;margin-top:5px}
+.new-cat-box{display:none;background:#fffbe6;border:2px dashed #ff9800;padding:10px;border-radius:10px;margin-top:8px}
+.new-cat-box input{background:white;font-weight:bold}
+.hint{font-size:12px;color:#666;margin-top:5px}
+.section-num{display:inline-block;background:#007bff;color:white;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;font-size:14px;font-weight:bold;margin-right:6px}
+.section-num-green{background:#28a745}
+.section-num-orange{background:#ff9800}
+.section-num-purple{background:#6a1b9a}
+.nav-lompat{position:sticky;top:0;z-index:100;background:#fff;padding:8px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;gap:6px;margin-bottom:10px}
+.nav-lompat button{flex:1;padding:10px 4px;font-size:12px;margin:0;border-radius:8px}
+.nav-lompat button:nth-child(1){background:#007bff}
+.nav-lompat button:nth-child(2){background:#28a745}
+.nav-lompat button:nth-child(3){background:#ff9800}
+.nav-lompat button:nth-child(4){background:#6a1b9a}
+.jump-btn{margin-top:10px}
+.full-sku{font-size:11px;color:#888}
+.plu-row{display:flex;gap:8px;margin-top:5px}
+.plu-row input{flex:1;margin-top:0}
+.plu-row button{flex-shrink:0;width:auto;padding:12px 10px;font-size:13px;margin-top:0;white-space:nowrap}
+.free-list{background:#e8f5e9;border:1px solid #a5d6a7;padding:8px;border-radius:8px;margin-top:8px;font-size:12px;display:none}
+.free-list b{color:#2e7d32}
+.free-chip{display:inline-block;background:white;border:1px solid #81c784;padding:3px 8px;border-radius:20px;margin:3px 2px 0 0;cursor:pointer;font-weight:bold;color:#2e7d32}
+/* === PRINT A4 LANDSCAPE PENUH === */
+@page{ size: A4 landscape; margin:0; }
+@media print{
+  body{background:white;padding:0;margin:0;width:297mm;height:210mm;overflow:hidden}
+  .box,button,.no-print,h2,p{display:none !important}
+  .result{display:flex !important;flex-direction:column;justify-content:center;align-items:center;box-shadow:none !important;border:none !important;border-radius:0 !important;padding:0 !important;margin:0 !important;width:297mm !important;height:210mm !important;box-sizing:border-box;overflow:hidden}
+  #namaOut{font-size:48pt !important;line-height:1.1 !important;white-space:nowrap;overflow:hidden;max-width:280mm;font-weight:bold}
+  #beratOut{font-size:28pt !important;line-height:1.1 !important;margin:2mm 0 !important}
+  #hargaOut{font-size:72pt !important;line-height:1.05 !important;margin:2mm 0 !important;color:#000 !important}
+  #barcodeImg{width:260mm !important;height:70mm !important;max-width:260mm !important;object-fit:fill}
+  #numOut{font-size:28pt !important;letter-spacing:4px !important;margin:2mm 0 0 0 !important;line-height:1.1 !important}
+  .result div:last-child{display:none !important}
+}
+</style>
+</head>
+<body>
+<div class="nav-lompat no-print">
+<button onclick="lompat('sec1')">1️⃣ Pilih</button>
+<button onclick="lompat('sec2')">2️⃣ Senarai</button>
+<button onclick="lompat('sec3')">3️⃣ Tambah</button>
+<button onclick="lompat('sec4')">4️⃣ Import</button>
+</div>
+<h2>🏷️ Barcode Prepack Barang</h2>
+<p>Untuk Loyverse - Pilih Barang, Masuk KG je</p>
+<div class="box" id="sec1">
+<h3 style="margin:0"><span class="section-num">1</span> Pilih Barang</h3>
+<p style="text-align:left;font-size:12px;margin:5px 0">Pilih Category, taip untuk tapis, tekan barang tu terus pilih. List dah sort ikut SKU menaik, lepas tu Abjad.</p>
+<label>📂 Category</label>
+<div class="filter-row" style="margin-top:5px">
+<select id="filterKategoriPilih" onchange="renderPilihList()">
+<option value="">📂 Semua Category</option>
+</select>
+<button class="small grey" onclick="clearFilterPilih()" style="flex-shrink:0">Clear</button>
+</div>
+<label>🔍 Cari Barang</label>
+<div class="search-wrap">
+<span class="search-icon">🔍</span>
+<input id="pilihBarang" placeholder="Taip nama / SKU / category... contoh: borong" autocomplete="off" oninput="renderPilihList()">
+<button class="clear-btn" id="btnClearPilih" onclick="clearPilih()">✕</button>
+</div>
+<div class="search-info" id="searchInfo">Tunjuk semua barang. Pilih Category / taip untuk tapis.</div>
+<div class="pilih-list" id="pilihList"></div>
+<label>Category Dipilih</label>
+<input id="kategoriOut" placeholder="-" readonly style="background:#f8f9fa;color:#666">
+<label>PLU / Kod Barang (5 digit)</label>
+<input id="plu" value="00250">
+<label>Nama Barang (termasuk nama variant)</label>
+<input id="nama" value="TEMBAKAU M">
+<label>Harga Sekilo (RM)</label>
+<input id="hargaKg" value="250" type="number" step="0.01">
+<label>Berat (KG) - Contoh: 0.016 / 0.35</label>
+<input id="kg" placeholder="0.000" type="number" step="0.001" value="0.000">
+<button onclick="buat()">BUAT BARCODE</button>
+<button class="green" onclick="printIPhone()">PRINT LABEL - A4 MELINTANG PENUH</button>
+<div style="font-size:11px;color:#666;text-align:center;margin-top:5px">Auto A4 Landscape - besar penuh A4. Dalam 4Barcode biar je A4 / 100%.</div>
+</div>
+<div class="result" id="result">
+<div id="namaOut" style="font-size:20px;font-weight:bold"></div>
+<div id="beratOut" style="font-size:16px"></div>
+<div class="price" id="hargaOut"></div>
+<img id="barcodeImg" style="width:100%;max-width:320px;height:80px" src="">
+<div class="barcode-num" id="numOut"></div>
+<div style="font-size:12px;color:#888">Scan kat Loyverse untuk test</div>
+</div>
+<div class="box no-print" id="sec2">
+<h3 style="margin:0"><span class="section-num section-num-green">2</span> Senarai Barang
+<button class="small grey" id="btnToggleSenarai" onclick="toggleSenarai()" style="float:right">➖ Tutup</button>
+</h3>
+<div id="senaraiContent">
+<p style="text-align:left;font-size:12px;margin:5px 0">Sama style macam No 1 - pilih Category, taip untuk tapis, scroll dalam kotak tu je. Tekan Edit untuk tukar barang tu.</p>
+<label>📂 Category</label>
+<div class="filter-row" style="margin-top:5px">
+<select id="filterKategori" onchange="renderList()">
+<option value="">📂 Semua Category</option>
+</select>
+<button class="small grey" onclick="clearFilterKategori()" style="flex-shrink:0">Clear</button>
+</div>
+<label>🔍 Cari Barang</label>
+<div class="search-wrap">
+<span class="search-icon">🔍</span>
+<input id="cariList" placeholder="Taip nama / SKU / category... atau SKU penuh Loyverse" autocomplete="off" oninput="cariList()">
+<button class="clear-btn" id="btnClearCariList" onclick="clearCariList()">✕</button>
+</div>
+<div class="search-info" id="listSearchInfo">Tunjuk semua barang. Taip untuk tapis, atau pilih Category kat atas.</div>
+<div class="pilih-list" id="listBarang"></div>
+<div style="font-weight:bold;margin-top:10px;font-size:13px">Senarai Barang Kau (<span id="countBarang">0</span>) <span id="countFiltered" style="font-weight:normal;color:#666;font-size:13px"></span></div>
+<div class="sort-info">🔢 Sort: SKU menaik (00122 → 00999) → lepas tu Abjad (A → Z)</div>
+<button class="orange jump-btn" onclick="lompat('sec3')">⬇️ Pergi ke No 3 - Tambah Barang</button>
+</div>
+<div id="senaraiTutup" style="display:none">
+<p style="text-align:left;font-size:13px;margin:10px 0">Senarai ditutup untuk senang scroll. Tekan Buka balik kalau nak tengok senarai.</p>
+<button class="green" onclick="toggleSenarai()">👁️ Buka Senarai Barang</button>
+<button class="orange" onclick="lompat('sec3')">⬇️ Pergi ke No 3 - Tambah Barang</button>
+</div>
+</div>
+<div class="box no-print" id="sec3">
+<h3 style="margin:0"><span class="section-num section-num-orange">3</span> Tambah Barang</h3>
+<p style="text-align:left;font-size:12px;margin:5px 0">Tambah barang baru, atau Edit barang yang kau tekan kat No 2 tadi. Auto simpan dalam phone. Nama boleh sama, SKU tak boleh sama.</p>
+<label>Nama Barang - Boleh sama dengan barang lain</label>
+<input id="newNama" placeholder="Contoh: TEMBAKAU M">
+<label>Category - Pilih dari list yang ada</label>
+<select id="newKategoriSelect" onchange="onKategoriSelectChange()">
+<option value="">-- Pilih Category --</option>
+</select>
+<div class="new-cat-box" id="newCatBox">
+<label style="margin-top:0">✏️ Nama Category Baru</label>
+<input id="newKategoriBaru" placeholder="Contoh: MINYAK / GULA / SUSU">
+<div class="hint">Taip nama category baru yang belum ada dalam list. Nanti dia akan masuk dalam list Category untuk barang lain pulak.</div>
+</div>
+<div class="hint" id="kategoriHint">Pilih category yang dah ada. Kalau takde, pilih "➕ Category Baru..." kat bawah list tu.</div>
+<label>SKU (5 digit) - Mesti unik, tak boleh sama dengan yang dah ada</label>
+<div class="plu-row">
+<input id="newSku" placeholder="Contoh: 00333" inputmode="numeric" oninput="checkDuplicate()">
+<button class="teal" type="button" onclick="cariPLUKosongBtn()">🔍 Cari PLU Kosong</button>
+</div>
+<div class="warn" id="warnDuplicate"></div>
+<div class="ok" id="okDuplicate"></div>
+<div class="free-list" id="freeList"></div>
+<div class="hint">Kalau SKU yang kau taip tu dah ada orang pakai, dia akan bagitau nama barang tu + cadangkan PLU kosong yang lain. Tekan je nombor hijau tu untuk guna.</div>
+<label>SKU Penuh Loyverse (kalau ada - contoh: 9555976900027)</label>
+<input id="newSkuFull" placeholder="Kosongkan kalau barang baru - nanti auto ikut SKU 5 digit" inputmode="numeric">
+<div class="hint">Ni untuk bezakan barang yang last 5 digit sama macam kes 00027 tu. Kalau kosong, dia akan guna SKU 5 digit tu je.</div>
+<label>Harga Sekilo (RM)</label>
+<input id="newHarga" placeholder="Contoh: 18" type="number" step="0.01">
+<input type="hidden" id="editIndex" value="-1">
+<button class="orange" id="btnSimpan" onclick="simpanBarang()">+ TAMBAH BARANG BARU</button>
+<button class="grey" id="btnBatal" onclick="batalEdit()" style="display:none">Batal Edit</button>
+<button class="green" onclick="lompat('sec1')">⬆️ Balik ke No 1 - Pilih Barang</button>
+</div>
+<div class="box no-print" id="sec4">
+<h3 style="margin:0"><span class="section-num section-num-purple">4</span> Import dan Export</h3>
+<p style="text-align:left;font-size:12px;margin:5px 0">Import dari Loyverse, atau Export senarai kau jadi CSV style Loyverse untuk backup / buka kat Excel.</p>
+<div class="upload-box">
+<div style="font-weight:bold">📤 Import - Upload List dari Loyverse</div>
+<p style="text-align:center;font-size:12px;margin:5px 0">Export CSV kat Loyverse > Items > Export, lepas tu upload kat sini. Category dari Loyverse akan ikut sekali.</p>
+<label class="check-row"><input type="checkbox" id="onlyWeight" checked> ✅ Pilih Y dulu, lepas tu ambik semua variant dia</label>
+<input type="file" id="csvFile" accept=".csv,text/csv" onchange="uploadCSV(event)" style="border:none;padding:5px">
+<div style="font-size:11px;color:#666;margin-top:5px">Parent Y = ambik parent + SEMUA variant. Nama variant dari option 1 value / option 2 value / option 3 value. Kalau last 5 digit sama, dia tak timpa lagi - dia akan bagi PLU baru.</div>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button class="small grey" onclick="downloadContoh()">Download Contoh CSV</button>
+<button class="small red" onclick="padamSemua()">Padam Semua</button>
+</div>
+</div>
+<div class="export-box">
+<div style="font-weight:bold">📥 Export - List Item Style Loyverse</div>
+<p style="text-align:center;font-size:12px;margin:5px 0">Download senarai barang kau sekarang jadi CSV style Loyverse. Boleh buka kat Excel, boleh backup, boleh upload balik kat sini.</p>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button class="small purple" onclick="exportLoyverseCSV()">📥 Export Semua - Loyverse CSV</button>
+<button class="small grey" onclick="exportLoyverseCSV(true)">Export Yang Ditapis Sahaja</button>
+</div>
+<div style="font-size:11px;color:#666;margin-top:8px;text-align:left">Format: Handle, SKU, Name, Category, Description, Sold by weight, Price, Option 1 Name, Option 1 Value<br>Variant akan jadi baris ke-2, ke-3... macam Loyverse - Name kosong, Option 1 Value = nama variant.</div>
+</div>
+<button class="green" onclick="lompat('sec1')">⬆️ Balik ke No 1 - Pilih Barang</button>
+</div>
+<script>
+let presets = JSON.parse(localStorage.getItem('barangPresets') || 'null');
+if(!presets){
+  presets = [
+    {sku:'00250', nama:'TEMBAKAU M', harga:250, kategori:'TEMBAKAU', skuFull:'00250'},
+    {sku:'00122', nama:'Ikan Jahan', harga:22, kategori:'', skuFull:'00122'},
+    {sku:'00251', nama:'TEMBAKAU K', harga:250, kategori:'TEMBAKAU', skuFull:'00251'}
+  ];
+  localStorage.setItem('barangPresets', JSON.stringify(presets));
+}
+presets = presets.map(p=>({sku:p.sku, nama:p.nama, harga:p.harga, kategori:p.kategori||'', skuFull:p.skuFull||p.sku||''}));
+let selectedIdx = -1;
+let senaraiBuka = true;
+let lastLabel = null;
+function lompat(id){
+  let el=document.getElementById(id);
+  if(!el) return;
+  if(id==='sec2' && !senaraiBuka) toggleSenarai(true);
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function toggleSenarai(forceBuka){
+  if(forceBuka===true) senaraiBuka=true;
+  else if(forceBuka===false) senaraiBuka=false;
+  else senaraiBuka=!senaraiBuka;
+  document.getElementById('senaraiContent').style.display = senaraiBuka ? 'block' : 'none';
+  document.getElementById('senaraiTutup').style.display = senaraiBuka ? 'none' : 'block';
+  document.getElementById('btnToggleSenarai').innerText = senaraiBuka ? '➖ Tutup' : '👁️ Buka';
+}
+function getKategori(it){ return it.kategori||''; }
+function getSkuFull(it){ return it.skuFull||it.sku||''; }
+function getPLUKosongList(count, excludeIdx){
+  let list=[];
+  for(let n=1;n<=99999 && list.length<count;n++){
+    let c=String(n).padStart(5,'0');
+    let ada=presets.some((p,i)=> p.sku===c && i!==excludeIdx);
+    if(!ada) list.push(c);
+  }
+  return list;
+}
+function cariPLUKosong(){
+  let editIdx=parseInt(document.getElementById('editIndex').value);
+  if(isNaN(editIdx)) editIdx=-1;
+  let list=getPLUKosongList(1, editIdx);
+  return list.length?list[0]:'';
+}
+function cariPLUKosongBtn(){
+  let editIdx=parseInt(document.getElementById('editIndex').value);
+  if(isNaN(editIdx)) editIdx=-1;
+  let list=getPLUKosongList(8, editIdx);
+  if(!list.length){ alert('Takde PLU kosong dah!'); return; }
+  document.getElementById('newSku').value=list[0];
+  checkDuplicate();
+  let fl=document.getElementById('freeList');
+  fl.style.display='block';
+  fl.innerHTML='<b>✅ PLU kosong yang boleh guna - tekan je nombor tu:</b><br>'+list.map(c=>'<span class="free-chip" onclick="pilihPLUKosong(\''+c+'\')"> '+c+'</span>').join('')+'<br><span style="color:#666">Yang pertama '+list[0]+' dah masuk kat kotak SKU kat atas tu.</span>';
+}
+function pilihPLUKosong(c){
+  document.getElementById('newSku').value=c;
+  checkDuplicate();
+}
+function barangMatch(it, q){
+  if(!q) return true;
+  q=q.toLowerCase();
+  return it.nama.toLowerCase().includes(q) || it.sku.toLowerCase().includes(q) || getSkuFull(it).toLowerCase().includes(q) || String(it.harga).includes(q) || getKategori(it).toLowerCase().includes(q);
+}
+function barangMatchKategori(it, filterKat){
+  if(!filterKat) return true;
+  return getKategori(it).toLowerCase()===filterKat.toLowerCase();
+}
+function getAllKategori(){
+  let set={};
+  presets.forEach(p=>{ let k=getKategori(p).trim(); if(k) set[k]=true; });
+  return Object.keys(set).sort();
+}
+function sortBarang(a, b){
+  let skuA = (a.it.sku||'').toString();
+  let skuB = (b.it.sku||'').toString();
+  if(skuA !== skuB) return skuA.localeCompare(skuB, 'ms', {numeric:true});
+  let namaA = (a.it.nama||'').toLowerCase();
+  let namaB = (b.it.nama||'').toLowerCase();
+  if(namaA !== namaB) return namaA.localeCompare(namaB, 'ms');
+  return (a.it.kategori||'').localeCompare(b.it.kategori||'', 'ms');
+}
+function renderKategoriFilter(){
+  let cats=getAllKategori();
+  let selP=document.getElementById('filterKategoriPilih');
+  let curP=selP.value;
+  selP.innerHTML='<option value="">📂 Semua Category ('+presets.length+' barang)</option>';
+  cats.forEach(c=>{
+    let count=presets.filter(p=>getKategori(p)===c).length;
+    let opt=document.createElement('option'); opt.value=c; opt.textContent=c+' ('+count+')'; selP.appendChild(opt);
+  });
+  if(curP && cats.includes(curP)) selP.value=curP;
+  let sel=document.getElementById('filterKategori');
+  let cur=sel.value;
+  sel.innerHTML='<option value="">📂 Semua Category ('+presets.length+' barang)</option>';
+  cats.forEach(c=>{
+    let count=presets.filter(p=>getKategori(p)===c).length;
+    let opt=document.createElement('option'); opt.value=c; opt.textContent=c+' ('+count+')'; sel.appendChild(opt);
+  });
+  if(cur && cats.includes(cur)) sel.value=cur;
+  renderNewKategoriSelect();
+}
+function renderNewKategoriSelect(keepValue){
+  let sel=document.getElementById('newKategoriSelect');
+  let cur = keepValue !== undefined ? keepValue : sel.value;
+  let cats=getAllKategori();
+  sel.innerHTML='<option value="">-- Pilih Category --</option>';
+  cats.forEach(c=>{
+    let count=presets.filter(p=>getKategori(p)===c).length;
+    let opt=document.createElement('option'); opt.value=c; opt.textContent=c+' ('+count+' barang)'; sel.appendChild(opt);
+  });
+  let optBaru=document.createElement('option'); optBaru.value='__BARU__'; optBaru.textContent='➕ Category Baru... (taip nama baru)'; sel.appendChild(optBaru);
+  if(cur){
+    if(cats.includes(cur) || cur==='__BARU__') sel.value=cur;
+    else if(cur){
+      sel.value='__BARU__';
+      document.getElementById('newKategoriBaru').value=cur;
+    }
+  }
+  onKategoriSelectChange();
+}
+function onKategoriSelectChange(){
+  let sel=document.getElementById('newKategoriSelect');
+  let box=document.getElementById('newCatBox');
+  let hint=document.getElementById('kategoriHint');
+  if(sel.value==='__BARU__'){
+    box.style.display='block';
+    hint.innerText='Taip nama category baru kat kotak kuning tu. Contoh: MINYAK, GULA, SUSU';
+  } else {
+    box.style.display='none';
+    if(sel.value) hint.innerText='Category dipilih: '+sel.value;
+    else hint.innerText='Pilih category yang dah ada. Kalau takde, pilih "➕ Category Baru..." kat bawah list tu.';
+  }
+}
+function getKategoriFromForm(){
+  let sel=document.getElementById('newKategoriSelect').value;
+  if(sel==='__BARU__'){
+    return document.getElementById('newKategoriBaru').value.trim();
+  }
+  return sel.trim();
+}
+function resetKategoriForm(){
+  document.getElementById('newKategoriSelect').value='';
+  document.getElementById('newKategoriBaru').value='';
+  document.getElementById('newCatBox').style.display='none';
+  document.getElementById('kategoriHint').innerText='Pilih category yang dah ada. Kalau takde, pilih "➕ Category Baru..." kat bawah list tu.';
+}
+function clearFilterPilih(){
+  document.getElementById('filterKategoriPilih').value='';
+  document.getElementById('pilihBarang').value='';
+  document.getElementById('btnClearPilih').style.display='none';
+  renderPilihList();
+}
+function clearFilterKategori(){
+  document.getElementById('filterKategori').value='';
+  document.getElementById('cariList').value='';
+  document.getElementById('btnClearCariList').style.display='none';
+  renderList();
+}
+function catBadgeHTML(k){
+  if(!k) return '';
+  return ' <span class="cat-badge">'+k+'</span>';
+}
+function skuFullHTML(it){
+  let f=getSkuFull(it);
+  if(!f || f===it.sku) return '';
+  return '<br><span class="full-sku">SKU Loyverse: '+f+'</span>';
+}
+function renderPilihList(){
+  let q=(document.getElementById('pilihBarang').value||'').toLowerCase().trim();
+  let filterKat=document.getElementById('filterKategoriPilih')?.value||'';
+  document.getElementById('btnClearPilih').style.display = q ? 'block' : 'none';
+  let div=document.getElementById('pilihList');
+  let info=document.getElementById('searchInfo');
+  let filtered=[];
+  presets.forEach((it,i)=>{ if(barangMatch(it,q) && barangMatchKategori(it, filterKat)) filtered.push({it:it, idx:i}); });
+  filtered.sort(sortBarang);
+  if(q || filterKat){
+    info.innerText='Tapis: '+(filterKat? 'Category: '+filterKat+' ' : '')+(q? 'Cari: "'+q+'"' : '')+' - Jumpa '+filtered.length+' barang - tekan barang tu untuk pilih';
+  } else {
+    info.innerText='Tunjuk semua barang ('+presets.length+') - Sort: SKU menaik → Abjad. Pilih Category / taip untuk tapis. Tekan barang tu untuk pilih.';
+  }
+  if(filtered.length===0){
+    div.innerHTML='<div class="pilih-empty">Tak jumpa barang.<br>Cuba tukar Category / taip lain.</div>';
+    return;
+  }
+  let html='<div class="pilih-head">Tekan barang untuk pilih - Tunjuk '+filtered.length+' barang - Sort: SKU ↑ → Abjad A-Z'+(filtered.length>50?' (scroll untuk tengok lagi)':'')+'</div>';
+  filtered.forEach(({it, idx})=>{
+    let selClass = (idx===selectedIdx) ? ' selected' : '';
+    html+='<div class="item-row'+selClass+'" onclick="pilihSuggestion('+idx+')"><div><b>'+it.nama+catBadgeHTML(getKategori(it))+'</b><br><span>SKU: '+it.sku+' | RM'+it.harga+'/kg'+(getKategori(it)?' | '+getKategori(it):'')+'</span>'+skuFullHTML(it)+'</div><div class="item-btns"><span style="font-size:20px">👉</span></div></div>';
+  });
+  div.innerHTML=html;
+}
+function pilihSuggestion(idx){
+  let it=presets[idx];
+  selectedIdx=idx;
+  document.getElementById('pilihBarang').value='';
+  document.getElementById('plu').value=it.sku;
+  document.getElementById('nama').value=it.nama;
+  document.getElementById('hargaKg').value=it.harga;
+  document.getElementById('kategoriOut').value=getKategori(it)||'-';
+  document.getElementById('searchInfo').innerText='Dipilih: '+it.nama+' - RM'+it.harga+'/kg'+(getKategori(it)?' - Category: '+getKategori(it):'')+' - Sekarang masuk KG kat bawah tu';
+  renderPilihList();
+  document.getElementById('kg').focus();
+  document.getElementById('kg').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function clearPilih(){
+  document.getElementById('pilihBarang').value='';
+  document.getElementById('btnClearPilih').style.display='none';
+  selectedIdx=-1;
+  renderPilihList();
+  document.getElementById('pilihBarang').focus();
+}
+function renderList(){
+  let q=(document.getElementById('cariList')?.value||'').toLowerCase().trim();
+  let filterKat=document.getElementById('filterKategori')?.value||'';
+  let div = document.getElementById('listBarang');
+  let filtered=[];
+  presets.forEach((it,i)=>{ if(barangMatch(it,q) && barangMatchKategori(it, filterKat)) filtered.push({it:it, idx:i}); });
+  filtered.sort(sortBarang);
+  document.getElementById('countBarang').innerText = presets.length;
+  let cf=document.getElementById('countFiltered');
+  let info=document.getElementById('listSearchInfo');
+  if(q || filterKat){
+    cf.innerText='- Tunjuk '+filtered.length+' lepas tapis';
+    info.innerText='Tapis: '+(filterKat? 'Category: '+filterKat+' ' : '')+(q? 'Cari: "'+q+'"' : '')+' - Jumpa '+filtered.length+' barang - tekan Edit untuk tukar';
+  } else {
+    cf.innerText='';
+    info.innerText='Tunjuk semua barang ('+presets.length+') - Sort: SKU menaik → Abjad. Taip untuk tapis, atau pilih Category kat atas.';
+  }
+  if(filtered.length==0){
+    div.innerHTML='<div class="pilih-empty">Tak jumpa barang.<br>Cuba tukar Category / taip lain.</div>';
+    return;
+  }
+  let html='<div class="pilih-head">Tekan Edit untuk tukar - Tunjuk '+filtered.length+' barang - Sort: SKU ↑ → Abjad A-Z'+(filtered.length>50?' (scroll untuk tengok lagi)':'')+'</div>';
+  filtered.forEach(({it, idx})=>{
+    html+='<div class="item-row"><div><b>'+it.nama+catBadgeHTML(getKategori(it))+'</b><br><span>SKU: '+it.sku+' | RM'+it.harga+'/kg'+(getKategori(it)?' | '+getKategori(it):'')+'</span>'+skuFullHTML(it)+'</div><div class="item-btns"><button class="small orange" onclick="editBarang('+idx+')">Edit</button><button class="small red" onclick="deleteBarang('+idx+')">Delete</button></div></div>';
+  });
+  div.innerHTML=html;
+}
+function refreshAll(){
+  localStorage.setItem('barangPresets', JSON.stringify(presets));
+  renderKategoriFilter();
+  renderPilihList();
+  renderList();
+}
+function cariList(){
+  let q=document.getElementById('cariList').value;
+  document.getElementById('btnClearCariList').style.display = q ? 'block' : 'none';
+  renderList();
+}
+function clearCariList(){
+  document.getElementById('cariList').value='';
+  document.getElementById('btnClearCariList').style.display='none';
+  renderList();
+  document.getElementById('cariList').focus();
+}
+function checkDuplicate(){
+  let sku = document.getElementById('newSku').value.trim().padStart(5,'0');
+  let editIdx = parseInt(document.getElementById('editIndex').value);
+  if(isNaN(editIdx)) editIdx=-1;
+  let warn=document.getElementById('warnDuplicate');
+  let ok=document.getElementById('okDuplicate');
+  let fl=document.getElementById('freeList');
+  warn.style.display='none';
+  ok.style.display='none';
+  warn.innerText='';
+  ok.innerText='';
+  if(!sku || sku==='00000') return false;
+  let dupSku = presets.findIndex((p,i)=> p.sku===sku && i!==editIdx);
+  if(dupSku>=0){
+    let cadangan=getPLUKosongList(5, editIdx);
+    warn.innerText='⚠️ SKU '+sku+' DAH ADA untuk "'+presets[dupSku].nama+'" (SKU Loyverse: '+getSkuFull(presets[dupSku])+')! Tak boleh guna. Guna PLU kosong kat bawah ni.';
+    warn.style.display='block';
+    fl.style.display='block';
+    fl.innerHTML='<b>✅ PLU kosong - tekan je untuk guna:</b><br>'+cadangan.map(c=>'<span class="free-chip" onclick="pilihPLUKosong(\''+c+'\')"> '+c+'</span>').join('');
+    return true;
+  }
+  ok.innerText='✅ SKU '+sku+' belum ada, boleh guna. Nama boleh sama dengan barang lain, takde masalah.';
+  ok.style.display='block';
+  fl.style.display='none';
+  return false;
+}
+function simpanBarang(){
+  let nama = document.getElementById('newNama').value.trim();
+  let kategori = getKategoriFromForm();
+  let sku = document.getElementById('newSku').value.trim().padStart(5,'0');
+  let skuFull = document.getElementById('newSkuFull').value.trim().replace(/\D/g,'') || sku;
+  let harga = parseFloat(document.getElementById('newHarga').value);
+  if(!nama){ alert('Isi Nama Barang dulu!'); return; }
+  if(document.getElementById('newKategoriSelect').value==='__BARU__' && !kategori){ alert('Kau pilih Category Baru, tapi kotak nama category baru tu kosong lagi! Taip nama category baru dulu. Contoh: MINYAK'); document.getElementById('newKategoriBaru').focus(); return; }
+  if(!sku || sku.length!=5){ alert('SKU mesti 5 digit! Contoh 00333'); return; }
+  if(!harga){ alert('Isi Harga dulu!'); return; }
+  let editIdx = parseInt(document.getElementById('editIndex').value);
+  if(isNaN(editIdx)) editIdx=-1;
+  let dupFull = presets.findIndex((p,i)=> getSkuFull(p)===skuFull && getSkuFull(p)!=='' && i!==editIdx);
+  if(dupFull>=0){
+    alert('TAK BOLEH TAMBAH!\n\nSKU Loyverse '+skuFull+' dah ada untuk "'+presets[dupFull].nama+'" (PLU: '+presets[dupFull].sku+').\n\nKalau nak tukar harga / nama barang tu, tekan Edit kat barang tu, jangan tambah baru.');
+    return;
+  }
+  let dupSku = presets.findIndex((p,i)=> p.sku===sku && i!==editIdx);
+  if(dupSku>=0){
+    let cadangan=getPLUKosongList(3, editIdx);
+    alert('TAK BOLEH TAMBAH!\n\nPLU '+sku+' dah ada untuk "'+presets[dupSku].nama+'" (SKU Loyverse: '+getSkuFull(presets[dupSku])+').\n\nPLU mesti unik untuk barcode.\n\nPLU kosong yang boleh guna: '+cadangan.join(', ')+'\n\nTekan "Cari PLU Kosong" kat No 3 tu untuk auto isi.');
+    checkDuplicate();
+    return;
+  }
+  if(kategori){
+    let sama = getAllKategori().find(c=>c.toLowerCase()===kategori.toLowerCase());
+    if(sama) kategori=sama;
+  }
+  if(editIdx >= 0){ presets[editIdx] = {sku:sku, nama:nama, harga:harga, kategori:kategori, skuFull:skuFull}; alert('Dah update: '+nama+(kategori?' - Category: '+kategori:'')); }
+  else { presets.push({sku:sku, nama:nama, harga:harga, kategori:kategori, skuFull:skuFull}); alert('Dah tambah: '+nama+' (SKU: '+sku+')'+(kategori?' - Category: '+kategori:'')); }
+  document.getElementById('newNama').value='';
+  resetKategoriForm();
+  document.getElementById('newSku').value='';
+  document.getElementById('newSkuFull').value='';
+  document.getElementById('newHarga').value='';
+  document.getElementById('editIndex').value='-1';
+  document.getElementById('btnSimpan').innerText='+ TAMBAH BARANG BARU';
+  document.getElementById('btnBatal').style.display='none';
+  document.getElementById('warnDuplicate').style.display='none';
+  document.getElementById('okDuplicate').style.display='none';
+  document.getElementById('freeList').style.display='none';
+  refreshAll();
+}
+function editBarang(i){
+  let it = presets[i];
+  document.getElementById('newNama').value = it.nama;
+  let cats=getAllKategori();
+  let kat=getKategori(it);
+  if(kat && cats.includes(kat)){
+    document.getElementById('newKategoriSelect').value=kat;
+    document.getElementById('newKategoriBaru').value='';
+    document.getElementById('newCatBox').style.display='none';
+  } else if(kat){
+    document.getElementById('newKategoriSelect').value='__BARU__';
+    document.getElementById('newKategoriBaru').value=kat;
+    document.getElementById('newCatBox').style.display='block';
+  } else {
+    document.getElementById('newKategoriSelect').value='';
+    document.getElementById('newKategoriBaru').value='';
+    document.getElementById('newCatBox').style.display='none';
+  }
+  onKategoriSelectChange();
+  if(kat && cats.includes(kat)){
+    document.getElementById('newCatBox').style.display='none';
+    document.getElementById('kategoriHint').innerText='Category dipilih: '+kat;
+  }
+  document.getElementById('newSku').value = it.sku;
+  document.getElementById('newSkuFull').value = getSkuFull(it)===it.sku ? '' : getSkuFull(it);
+  document.getElementById('newHarga').value = it.harga;
+  document.getElementById('editIndex').value = i;
+  document.getElementById('btnSimpan').innerText='✅ SIMPAN EDIT - '+it.nama;
+  document.getElementById('btnBatal').style.display='block';
+  document.getElementById('warnDuplicate').style.display='none';
+  document.getElementById('okDuplicate').style.display='none';
+  document.getElementById('freeList').style.display='none';
+  toggleSenarai(false);
+  lompat('sec3');
+}
+function batalEdit(){
+  document.getElementById('newNama').value='';
+  resetKategoriForm();
+  document.getElementById('newSku').value='';
+  document.getElementById('newSkuFull').value='';
+  document.getElementById('newHarga').value='';
+  document.getElementById('editIndex').value='-1';
+  document.getElementById('btnSimpan').innerText='+ TAMBAH BARANG BARU';
+  document.getElementById('btnBatal').style.display='none';
+  document.getElementById('warnDuplicate').style.display='none';
+  document.getElementById('okDuplicate').style.display='none';
+  document.getElementById('freeList').style.display='none';
+}
+function deleteBarang(i){
+  if(!confirm('Betul nak delete '+presets[i].nama+' ?')) return;
+  presets.splice(i,1);
+  refreshAll();
+}
+function padamSemua(){
+  if(!confirm('Betul nak padam SEMUA barang?')) return;
+  presets=[];
+  selectedIdx=-1;
+  refreshAll();
+}
+function parseCSVLine(line, delim){
+  let out=[], cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    let c=line[i];
+    if(c=='"'){ if(inQ && line[i+1]=='"'){cur+='"'; i++;} else inQ=!inQ; }
+    else if(c==delim && !inQ){ out.push(cur); cur=''; }
+    else cur+=c;
+  }
+  out.push(cur);
+  return out.map(s=>s.trim().replace(/^"|"$/g,''));
+}
+function isVariantValueCol(h){
+  let hl=h.toLowerCase().trim();
+  if(hl==='variant name' || hl==='variant' || hl==='variant value' || hl.includes('attribute value')) return true;
+  if(hl.includes('option') && hl.includes('value')) return true;
+  if(hl.includes('option value')) return true;
+  return false;
+}
+function getVariantNameExplicit(cols, header){
+  let parts=[];
+  header.forEach((h, idx)=>{
+    if(!isVariantValueCol(h)) return;
+    let v=(cols[idx]||'').trim();
+    if(!v) return;
+    let vl=v.toLowerCase();
+    if(vl==='default' || vl==='default title' || vl==='default variant') return;
+    if(!parts.includes(v)) parts.push(v);
+  });
+  return parts.join(' / ');
+}
+function getVariantName(variantCols, parentCols, header, idxSku, idxHarga, idxHandle, idxWeigh, idxNama){
+  let explicit=getVariantNameExplicit(variantCols, header);
+  if(explicit) return explicit;
+  let parts=[];
+  let skipIdx = new Set([idxSku, idxHarga, idxHandle, idxWeigh, idxNama]);
+  let skipHeader = ['sku','barcode','price','cost','stock','quantity','handle','sold by weight','category','description','image','tax','track stock','low stock','barcode','ean','upc'];
+  header.forEach((h, idx)=>{
+    if(skipIdx.has(idx)) return;
+    let hl=h.toLowerCase().trim();
+    if(skipHeader.some(s=>hl===s || hl.startsWith(s+' '))) return;
+    let v=(variantCols[idx]||'').trim();
+    let pv=(parentCols[idx]||'').trim();
+    if(!v) return;
+    if(v===pv) return;
+    let vl=v.toLowerCase();
+    if(vl==='default' || vl==='default title') return;
+    if(!isNaN(Number(v)) && hl.includes('price')) return;
+    if(!parts.includes(v)) parts.push(v);
+  });
+  if(parts.length>0) return parts.join(' / ');
+  header.forEach((h, idx)=>{
+    if(skipIdx.has(idx)) return;
+    let v=(variantCols[idx]||'').trim();
+    if(!v) return;
+    if(!parts.includes(v)) parts.push(v);
+  });
+  return parts.join(' / ');
+}
+function uploadCSV(e){
+  let file=e.target.files[0];
+  if(!file) return;
+  let onlyWeight=document.getElementById('onlyWeight').checked;
+  let reader=new FileReader();
+  reader.onload=function(){
+    let text=reader.result.replace(/^\uFEFF/,'');
+    let lines=text.split(/\r?\n/).filter(l=>l.trim()!=='');
+    if(lines.length<2){ alert('File CSV kosong!'); return; }
+    let delim = ',';
+    if((lines[0].match(/;/g)||[]).length > (lines[0].match(/,/g)||[]).length) delim=';';
+    let header=parseCSVLine(lines[0], delim).map(h=>h.toLowerCase().trim());
+    let idxHandle = header.findIndex(h=>h==='handle');
+    let idxSku = header.findIndex(h=>h==='sku');
+    let idxNama = header.findIndex(h=>h==='name');
+    let idxKategori = header.findIndex(h=>h==='category');
+    let idxWeigh = header.findIndex(h=>h==='sold by weight');
+    if(idxWeigh<0) idxWeigh = header.findIndex(h=>h.includes('sold by weight') || h.includes('weigh'));
+    let idxHarga = header.findIndex(h=>h==='price' || h.startsWith('price'));
+    if(idxHarga<0) idxHarga = header.findIndex(h=>h.includes('price'));
+    if(idxNama<0){ alert('Tak jumpa Name. Header: '+lines[0]); return; }
+    let groups=[];
+    let lastGroup=null;
+    for(let r=1;r<lines.length;r++){
+      let cols=parseCSVLine(lines[r], delim);
+      let namaRaw=(cols[idxNama]||'').trim();
+      let handleRaw=(idxHandle>=0 ? (cols[idxHandle]||'').trim() : '');
+      let skuRaw=(idxSku>=0 ? (cols[idxSku]||'').trim() : '');
+      let weighRaw=(idxWeigh>=0 ? (cols[idxWeigh]||'').trim().toUpperCase() : '');
+      let hargaRaw=(idxHarga>=0 ? (cols[idxHarga]||'').trim() : '');
+      let kategoriRaw=(idxKategori>=0 ? (cols[idxKategori]||'').trim() : '');
+      if(namaRaw!==''){
+        let parentVariantRaw=getVariantNameExplicit(cols, header);
+        lastGroup={ parentNama:namaRaw, parentWeigh:weighRaw, parentHandle:handleRaw, parentCols:cols, parentKategori:kategoriRaw, rows:[] };
+        groups.push(lastGroup);
+        lastGroup.rows.push({ skuRaw:skuRaw, handleRaw:handleRaw, hargaRaw:hargaRaw, cols:cols, isParent:true, weighRaw:weighRaw, variantRaw:parentVariantRaw, kategoriRaw:kategoriRaw });
+      } else {
+        if(!lastGroup){ continue; }
+        let variantRaw=getVariantName(cols, lastGroup.parentCols, header, idxSku, idxHarga, idxHandle, idxWeigh, idxNama);
+        let kat = kategoriRaw || lastGroup.parentKategori || '';
+        lastGroup.rows.push({ skuRaw:skuRaw, handleRaw:handleRaw, hargaRaw:hargaRaw, cols:cols, isParent:false, weighRaw:weighRaw, variantRaw:variantRaw, kategoriRaw:kat });
+      }
+    }
+    let tambah=0, update=0, skipGroupN=0, skipGroupBlank=0, variantMasuk=0, variantTanpaNama=0, contohSkip='', contohVariant='', contohTanpaNama='';
+    let collisionList=[];
+    let debugParent={};
+    groups.forEach(g=>{
+      let pw=g.parentWeigh;
+      let key = pw==='' ? '(BLANK)' : pw;
+      debugParent[key]=(debugParent[key]||0)+1;
+      if(onlyWeight){
+        if(pw!=='Y'){
+          if(pw==='') skipGroupBlank++;
+          else skipGroupN++;
+          if(!contohSkip) contohSkip=g.parentNama+' (parent='+ (pw===''?'BLANK':pw) +')';
+          return;
+        }
+      }
+      g.rows.forEach(row=>{
+        let kodRaw = row.skuRaw || row.handleRaw || g.parentHandle;
+        let skuDigits=kodRaw.replace(/\D/g,'');
+        if(!skuDigits) return;
+        let skuFull=skuDigits;
+        let sku=skuDigits.padStart(5,'0').slice(-5);
+        let nama=g.parentNama;
+        let kategori=row.kategoriRaw || g.parentKategori || '';
+        if(row.variantRaw){
+          if(row.variantRaw.toLowerCase()===g.parentNama.toLowerCase()){
+            nama=g.parentNama;
+          } else {
+            nama = g.parentNama + ' - ' + row.variantRaw;
+          }
+          if(!row.isParent) variantMasuk++;
+          if(!contohVariant) contohVariant=nama+' ['+kategori+']';
+        } else {
+          if(!row.isParent){
+            variantMasuk++;
+            variantTanpaNama++;
+            if(!contohTanpaNama) contohTanpaNama=g.parentNama+' SKU:'+sku;
+            nama = g.parentNama + ' - VARIANT ' + sku;
+          }
+        }
+        let harga=parseFloat((row.hargaRaw||'').replace(/[^0-9.]/g,'')) || 0;
+        let existFull=presets.findIndex(p=>getSkuFull(p)===skuFull);
+        if(existFull>=0){
+          presets[existFull]={sku:presets[existFull].sku, nama:nama, harga:harga, kategori:kategori, skuFull:skuFull};
+          update++;
+          return;
+        }
+        let existPlu=presets.findIndex(p=>p.sku===sku);
+        if(existPlu>=0){
+          let pluBaru=cariPLUKosong();
+          if(!pluBaru) return;
+          collisionList.push(nama+' (SKU Loyverse: '+skuFull+') - PLU asal '+sku+' dah ada untuk "'+presets[existPlu].nama+'", diberi PLU baru '+pluBaru);
+          presets.push({sku:pluBaru, nama:nama, harga:harga, kategori:kategori, skuFull:skuFull});
+          tambah++;
+          return;
+        }
+        presets.push({sku:sku, nama:nama, harga:harga, kategori:kategori, skuFull:skuFull});
+        tambah++;
+      });
+    });
+    refreshAll();
+    document.getElementById('csvFile').value='';
+    let msg='Siap!\nTotal group: '+groups.length;
+    msg+='\nTambah baru: '+tambah+'\nUpdate: '+update+'\nVariant masuk: '+variantMasuk;
+    if(contohVariant) msg+='\nContoh variant ADA nama: '+contohVariant;
+    if(variantTanpaNama>0) msg+='\n⚠️ Variant TAK jumpa nama: '+variantTanpaNama+'\nContoh: '+contohTanpaNama;
+    if(collisionList.length>0){
+      msg+='\n\n⚠️ COLLISION LAST 5 DIGIT - '+collisionList.length+' barang:';
+      collisionList.slice(0,10).forEach(c=>{ msg+='\n- '+c; });
+      if(collisionList.length>10) msg+='\n... dan '+(collisionList.length-10)+' lagi. Semua dah diberi PLU baru, takde yang kena timpa.';
+    }
+    if(onlyWeight){
+      msg+='\nSkip parent N: '+skipGroupN+' group';
+      msg+='\nSkip parent Blank: '+skipGroupBlank+' group';
+    }
+    if(contohSkip) msg+='\nContoh skip: '+contohSkip;
+    msg+='\nTotal sekarang: '+presets.length+' barang';
+    msg+='\nCategory yang ada: '+getAllKategori().join(', ');
+    msg+='\n\nParent Sold by weight: '+JSON.stringify(debugParent);
+    alert(msg);
+  };
+  reader.readAsText(file);
+}
+function csvEscape(v){
+  v = String(v==null?'':v);
+  if(v.includes(',') || v.includes('"') || v.includes('\n')) return '"'+v.replace(/"/g,'""')+'"';
+  return v;
+}
+function splitParentVariant(namaFull){
+  let idx = namaFull.indexOf(' - ');
+  if(idx<0) return {parent:namaFull.trim(), variant:''};
+  return {parent:namaFull.slice(0, idx).trim(), variant:namaFull.slice(idx+3).trim()};
+}
+function exportLoyverseCSV(onlyFiltered){
+  let items = presets.slice();
+  if(onlyFiltered){
+    let q=(document.getElementById('cariList')?.value||'').toLowerCase().trim();
+    let filterKat=document.getElementById('filterKategori')?.value||'';
+    items = items.filter(it=>barangMatch(it,q) && barangMatchKategori(it, filterKat));
+    if(items.length===0){ alert('Takde barang dalam tapisan tu nak export!'); return; }
+  }
+  if(items.length===0){ alert('Belum ada barang nak export!'); return; }
+  let groupsMap = {};
+  let groupsOrder = [];
+  items.forEach(it=>{
+    let sp = splitParentVariant(it.nama);
+    let key = sp.parent + '|||' + getKategori(it);
+    if(!groupsMap[key]){
+      groupsMap[key]={parent:sp.parent, kategori:getKategori(it), rows:[]};
+      groupsOrder.push(key);
+    }
+    groupsMap[key].rows.push({sku:it.sku, harga:it.harga, variant:sp.variant, namaFull:it.nama, skuFull:getSkuFull(it)});
+  });
+  groupsOrder.sort((a,b)=>groupsMap[a].parent.localeCompare(groupsMap[b].parent, 'ms') || groupsMap[a].kategori.localeCompare(groupsMap[b].kategori, 'ms'));
+  groupsOrder.forEach(k=>{ groupsMap[k].rows.sort((a,b)=>a.sku.localeCompare(b.sku, 'ms', {numeric:true}) || a.variant.localeCompare(b.variant, 'ms')); });
+  let header = ['Handle','SKU','Name','Category','Description','Sold by weight','Price','Option 1 Name','Option 1 Value'];
+  let lines = [header.join(',')];
+  let handleNo = 1;
+  groupsOrder.forEach(k=>{
+    let g = groupsMap[k];
+    let handle = String(handleNo++).padStart(3,'0');
+    let hasVariant = g.rows.some(r=>r.variant!=='');
+    g.rows.forEach((r, idx)=>{
+      let isFirst = idx===0;
+      let nameCol = isFirst ? g.parent : '';
+      let catCol = isFirst ? g.kategori : '';
+      let descCol = '';
+      let weighCol = 'Y';
+      let optName = hasVariant ? 'TYPE' : '';
+      let optValue = r.variant || '';
+      lines.push([csvEscape(handle), csvEscape(r.skuFull), csvEscape(nameCol), csvEscape(catCol), csvEscape(descCol), csvEscape(weighCol), csvEscape(r.harga), csvEscape(optName), csvEscape(optValue)].join(','));
+    });
+  });
+  let csv = lines.join('\n');
+  let blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  let a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  let today = new Date(); let dd=String(today.getDate()).padStart(2,'0'); let mm=String(today.getMonth()+1).padStart(2,'0'); let yy=today.getFullYear();
+  a.download = onlyFiltered ? 'export_items_tapis_'+dd+mm+yy+'.csv' : 'export_items_'+dd+mm+yy+'.csv';
+  a.click();
+  alert('Dah export '+items.length+' barang ('+groupsOrder.length+' group) style Loyverse!\n\nFile: '+a.download+'\n\nBoleh buka kat Excel / upload balik kat sini. Format dia sama macam Loyverse export_items.');
+}
+function downloadContoh(){
+  let csv='Handle,SKU,Name,Category,Description,Sold by weight,Price,Option 1 Name,Option 1 Value\n001,00252,TEMBAKAU RM250/KG,TEMBAKAU,,Y,230,TYPE,TEMBAKAU BORONG\n001,00251,, ,, ,250,TYPE,TEMBAKAU K\n001,00250,, ,, ,250,TYPE,TEMBAKAU M\n003,00122,Ikan Jahan,IKAN,,Y,22,,\n';
+  let blob=new Blob([csv],{type:'text/csv'});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='contoh-loyverse.csv';
+  a.click();
+}
+function checkDigit(first12){
+  let s=0;
+  for(let i=0;i<12;i++){ let d=parseInt(first12[i]); s += (i+1)%2==1 ? d : d*3; }
+  return (10 - (s%10))%10;
+}
+function buat(){
+  let plu = document.getElementById('plu').value.padStart(5,'0');
+  let nama = document.getElementById('nama').value;
+  let hargaKg = parseFloat(document.getElementById('hargaKg').value);
+  let kg = parseFloat(document.getElementById('kg').value);
+  if(!kg){ alert('Masuk berat KG dulu! Contoh 0.016'); return; }
+  if(!hargaKg){ alert('Masuk harga sekilo dulu!'); return; }
+  let gram = Math.round(kg * 1000);
+  let total = Math.round(kg * hargaKg * 100)/100;
+  let weightField = Math.round(kg * 1000);
+  let ppppp = String(weightField).padStart(5,'0');
+  let base12 = '02' + plu + ppppp;
+  let c = checkDigit(base12);
+  let full = base12 + c;
+  lastLabel = {nama:nama+' - '+plu, berat:kg.toFixed(3)+'kg ('+gram+'g) x RM'+hargaKg.toFixed(2)+'/kg', harga:'RM'+total.toFixed(2), num:full, img:'https://bwipjs-api.metafloor.com/?bcid=ean13&text='+full+'&scale=3&height=15&includetext=false'};
+  document.getElementById('result').style.display='block';
+  document.getElementById('namaOut').innerText = lastLabel.nama;
+  document.getElementById('beratOut').innerText = lastLabel.berat;
+  document.getElementById('hargaOut').innerText = lastLabel.harga;
+  document.getElementById('numOut').innerText = lastLabel.num;
+  document.getElementById('barcodeImg').src = lastLabel.img;
+}
+function printIPhone(){
+  if(!lastLabel){ alert('Tekan BUAT BARCODE dulu!'); return; }
+  let w = window.open('', '_blank');
+  if(!w){ alert('Allow popup dulu kat iPhone ni'); return; }
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Label A4 Landscape</title><style>@page{size:A4 landscape;margin:0} *{margin:0;padding:0;box-sizing:border-box} body{width:297mm;height:210mm;overflow:hidden;background:white;font-family:Arial,sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center} .n{font-size:48pt;font-weight:bold;white-space:nowrap;overflow:hidden;max-width:280mm;line-height:1.1} .b{font-size:28pt;line-height:1.1;margin:2mm 0} .p{font-size:72pt;font-weight:bold;color:#000;line-height:1.05;margin:2mm 0} img{width:260mm;height:70mm;object-fit:fill;display:block} .num{font-size:28pt;letter-spacing:4px;line-height:1.1;font-family:monospace;margin-top:2mm} .btn{margin-top:4mm;padding:10px 14px;font-size:14px;background:#007bff;color:white;border:none;border-radius:6px} @media print{ .btn,.hint{display:none !important} body{width:297mm;height:210mm} }</style></head><body><div class="n">${lastLabel.nama}</div><div class="b">${lastLabel.berat}</div><div class="p">${lastLabel.harga}</div><img src="${lastLabel.img}"><div class="num">${lastLabel.num}</div><button class="btn" onclick="window.print()">PRINT</button><div class="hint" style="font-size:11px;color:#666;margin-top:2mm">A4 Landscape - Share ke 4Barcode - biar 100% - Fit A4</div></body></html>`);
+  w.document.close();
+}
+refreshAll();
+</script>
+</body>
+</html>
